@@ -78,20 +78,20 @@ services:
     depends_on:
       - proxy
 
- self signed
-  omgwtfssl:
-    image: paulczar/omgwtfssl
-    restart: "no"
-    volumes:
-      - certs:/certs
-    environment:
-      - SSL_SUBJECT=servhostname.local
-      - CA_SUBJECT=my@example.com
-      - SSL_KEY=/certs/servhostname.local.key
-      - SSL_CSR=/certs/servhostname.local.csr
-      - SSL_CERT=/certs/servhostname.local.crt
-    networks:
-      - proxy-tier
+  self-signed:
+   omgwtfssl:
+     image: paulczar/omgwtfssl
+     restart: "no"
+     volumes:
+       - certs:/certs
+     environment:
+       - SSL_SUBJECT=servhostname.local
+       - CA_SUBJECT=my@example.com
+       - SSL_KEY=/certs/servhostname.local.key
+       - SSL_CSR=/certs/servhostname.local.csr
+       - SSL_CERT=/certs/servhostname.local.crt
+     networks:
+       - proxy-tier
 
 volumes:
   db:
