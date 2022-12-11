@@ -21,12 +21,11 @@ services:
   app:
     image: nextcloud:apache
     restart: always
+    ports:
+      - 127.0.0.1:8080:80
     volumes:
       - nextcloud:/var/www/html
     environment:
-      - VIRTUAL_HOST=
-      - LETSENCRYPT_HOST=
-      - LETSENCRYPT_EMAIL=
       - MYSQL_HOST=db
       - REDIS_HOST=redis
     env_file:
@@ -34,9 +33,6 @@ services:
     depends_on:
       - db
       - redis
-    networks:
-      - proxy-tier
-      - default
 
   cron:
     image: nextcloud:apache
@@ -48,59 +44,6 @@ services:
       - db
       - redis
 
-  proxy:
-    build: ./proxy
-    restart: always
-    ports:
-      - 80:80
-      - 443:443
-    labels:
-      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
-    volumes:
-      - certs:/etc/nginx/certs:ro
-      - vhost.d:/etc/nginx/vhost.d
-      - html:/usr/share/nginx/html
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-    networks:
-      - proxy-tier
-
-  letsencrypt-companion:
-    image: nginxproxy/acme-companion
-    restart: always
-    volumes:
-      - certs:/etc/nginx/certs
-      - acme:/etc/acme.sh
-      - vhost.d:/etc/nginx/vhost.d
-      - html:/usr/share/nginx/html
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - proxy-tier
-    depends_on:
-      - proxy
-
-  self-signed:
-   omgwtfssl:
-     image: paulczar/omgwtfssl
-     restart: "no"
-     volumes:
-       - certs:/certs
-     environment:
-       - SSL_SUBJECT=servhostname.local
-       - CA_SUBJECT=my@example.com
-       - SSL_KEY=/certs/servhostname.local.key
-       - SSL_CSR=/certs/servhostname.local.csr
-       - SSL_CERT=/certs/servhostname.local.crt
-     networks:
-       - proxy-tier
-
 volumes:
   db:
   nextcloud:
-  certs:
-  acme:
-  vhost.d:
-  html:
-
-networks:
-  proxy-tier:
-
